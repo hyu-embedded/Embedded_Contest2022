@@ -1,13 +1,24 @@
 const express = require('express');
 const app = express();
-const port = 3000;      // Server port number
 
-var data = 1;
+const bodyParser = require('body-parser')
+const cors = require('cors')
 
-app.get('/', (req, res) => {
-    res.json({ 'data': data});
-});
+const indexRouter = require('./routes/index')
+const apiRouter = require('./routes/api')
+
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.json())
+app.use(cors());
+
+app.use(indexRouter);
+app.use('/api', apiRouter);
+
+
+const port = process.env.PORT || 3000;
+
 
 app.listen(port, () => {
     console.log(`Executing server...http://localhost:${port}`)
 });
+
