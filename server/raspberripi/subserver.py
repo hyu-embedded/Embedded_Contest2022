@@ -27,12 +27,13 @@ result_url = 'http://192.168.0.113:3000/rasp/result'
 
 # TODO: if(config_file!)
 
-device = ['수위측정', '초음파센서']
+device = ['water_sensor', 'ultrasound_sensor']
 
 hyu_loc = 37.555914
 hyu_lat = 127.049506
 floor = 6
-r = requests.post(start_url, json = {'pos': {'loc': hyu_loc, 'lat' : hyu_lat}, 'floor' : floor, 'num_of_devices' : len(device)})
+info = {'pos': {'loc': hyu_loc, 'lat' : hyu_lat}, 'floor' : floor, 'num_of_devices' : len(device)}
+r = requests.post(start_url, json = info)
 server_id = r.json()['id']
 a = 1
 water_sensor = 0
