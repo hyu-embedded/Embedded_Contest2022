@@ -1,15 +1,17 @@
 const express = require("express");
 const router = express.Router();
 
-var data = 1;
+var username = 'cho';
+
 
 router.get("/", function (req, res, next) {
-    res.send({'data': data});
+    res.send({'username': username});
 });
 
 router.post("/", (req, res, next) => {
-    data = int(req.body.data);
-    res.send(`Successfully get data: ${data}`);
+    username = req.body.name;
+    console.log(req.body);
+    res.send(`Successfully get username: ${username}`);
 })
 
 module.exports = router;

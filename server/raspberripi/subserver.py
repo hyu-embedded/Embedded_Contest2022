@@ -5,15 +5,20 @@ r = requests.get(url)
 print(r.text)
 print(r.status_code)
 
-payload = { 'key1' : 'value1', 'key2' : 'value2'}
-r = requests.get(url, data = payload)
+r = requests.get(url)
 
 print(r.url)
 print(r.text)
 print(r.status_code)
 
-r = r.request.post(url, data = {'key' : 'value'})
+r = requests.post(url, data = {'name': 'Test User'})
 
+print(r.text)
+print(r.status_code)
+
+r = requests.get(url)
+
+print(r.url)
 print(r.text)
 print(r.status_code)
 
