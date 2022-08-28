@@ -5,14 +5,14 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 
 const indexRouter = require('./routes/index')
-const apiRouter = require('./routes/api')
+const raspRouter = require('./routes/rasp')
 
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
 app.use(cors());
 
 app.use(indexRouter);
-app.use('/api', apiRouter);
+app.use('/rasp', raspRouter);
 
 
 const port = process.env.PORT || 3000;
