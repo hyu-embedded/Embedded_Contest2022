@@ -7,3 +7,6 @@ We use raspberrypi 4 and rasbian OS.
 If you want to use this code, you must know the pinmap for the raspberrypi 4 becasue the raspberrypi 4 has different nodes compared to basic raspberrypi.
 
 Pinmap URL: https://kr.mathworks.com/help/supportpkg/raspberrypiio/ug/use-the-i2c-interface-on-the-raspberry-pi-hardware.html
+
+# RF24l01 communication
+Arduino and Raspberri pi usage: https://www.youtube.com/watch?v=_68f-yp63ds&t=163s 
