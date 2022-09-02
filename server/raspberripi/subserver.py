@@ -15,8 +15,15 @@ def warning(a):
         return 1
 
 
-start_url = 'http://192.168.0.113:3000/rasp/start'
-result_url = 'http://192.168.0.113:3000/rasp/result'
+general_ip = '166.104.143.145'
+hyu_ip = '192.168.0.113'
+server_port = 3000
+
+start_url = f'http://{hyu_ip}:{server_port}/rasp/start'
+result_url = f'http://{hyu_ip}:{server_port}/rasp/result'
+
+# start_url = 'http://192.168.0.113:3000/rasp/start'
+# result_url = 'http://192.168.0.113:3000/rasp/result'
 # r = requests.get(url)
 # print(r.text)
 # print(r.status_code)
