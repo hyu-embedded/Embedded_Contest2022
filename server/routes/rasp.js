@@ -11,13 +11,22 @@ var rpiClients = {};
 //result
 
 router.post('/start', (req, res, next) => {
-    var {pos, floor, num_of_devices} = req.body;
+    // var {pos, floor, num_of_devices} = req.body;
+    
+    // id += 1;
+    // var client = new rpiClient(id=id, position=pos, num_of_devices=num_of_devices);
+    // rpiClients[id] = client.getState();
+    // res.send(client.printInfo());
     
     id += 1;
-    var client = new rpiClient(id=id, position=pos, num_of_devices=num_of_devices);
-    rpiClients[id] = client.getState();
-    res.send(client.printInfo());
+    var pos = req.body.pos;
+    var floor = req.body.floor;
+    var num_of_devices = req.body.num_of_devices;
+    
     console.log(`New clients with id ${id}:\nposition: loc=${pos['loc']}, lat=${pos['lat']}\nfloor=${floor}\nnumber of devices: ${num_of_devices}`);
+    res.json({'id': id});
+
+    
 });
 
 router.post('/result', (req, res, next) => {
