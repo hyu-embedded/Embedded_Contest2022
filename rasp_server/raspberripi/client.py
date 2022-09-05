@@ -10,6 +10,9 @@ import spidev
 
 GPIO.setmode(GPIO.BCM)
 
+water_sensor = 0x76
+ultra_sensor = 0x77
+
 class MSG_TYPE(Enum):
     RPI_SETUP_REQUEST = 0
     RPI_SEND_RESULT = 1
@@ -88,40 +91,29 @@ class rpiserver:
         self.pipes = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1],[0xF0, 0xF0, 0xF0, 0xF0, 0xE1]]
         self.radio = NRF24(GPIO, spidev.SpiDev())
 
-    def setup_water_sensor(self):
+    def radio_setup(self):
         self.radio.begin(0, 17,4000000)
         self.radio.setPayloadSize(32)
-        self.radio.setChannel(0x76)
         self.radio.setDataRate(NRF24.BR_1MBPS)
         self.radio.setPALevel(NRF24.PA_MIN)
 
         self.radio.setAutoAck(True)
         self.radio.enableDynamicPayloads()
         self.radio.enableAckPayload()
+        self.radio.openReadingPipe(1, self.pipes[1])
 
-        self.radio.openReadingPipe(1, pipes[1])
         self.radio.printDetails()
         self.radio.startListening()
-    
-    def ultra_sensor(self):
-        self.radio.begin(0, 17,4000000)
-        self.radio.setPayloadSize(32)
-        self.radio.setChannel(0x77)
-        self.radio.setDataRate(NRF24.BR_1MBPS)
-        self.radio.setPALevel(NRF24.PA_MIN)
 
-        self.radio.setAutoAck(True)
-        self.radio.enableDynamicPayloads()
-        self.radio.enableAckPayload()
-
-        self.radio.openReadingPipe(1, pipes[1])
-        self.radio.printDetails()
-        self.radio.startListening()
-    
+    def watersensor(self,channel):
+        self.radio.setChannel(channel)
+        
     def listening(self):
         while True:
             while not self.radio.available(0):
+                
                 time.sleep(1/1000)
+                # print("WAIT FOR")
             
             receivedMessage = []
             self.radio.read(receivedMessage, self.radio.getDynamicPayloadSize())
@@ -148,9 +140,12 @@ if __name__ == '__main__':
 
     #     time.sleep(2)
     rasp = rpiserver()
-
-    rasp.setup_water_sensor()
-
+    rasp.radio_setup()
+    # message = 4
+    # if message == MSG_TYPE.LEVEL_SEND_RESULT:
+    rasp.watersensor(water_sensor)
+    # elif message == 2:
+        # rasp.ultrasensor(water_sensor)
     rasp.listening()
 
     
