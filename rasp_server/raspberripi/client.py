@@ -137,14 +137,20 @@ class rpiserver:
 
 if __name__ == '__main__':
     
-    rasp = rpiClient()
-    LOGGING = True
+    # rasp = rpiClient()
+    # LOGGING = True
 
-    rasp.request_setup(LOGGING=LOGGING)
+    # rasp.request_setup(LOGGING=LOGGING)
 
-    while True:
+    # while True:
 
-        rasp.send_result(LOGGING=LOGGING)
+    #     rasp.send_result(LOGGING=LOGGING)
 
-        time.sleep(2)
+    #     time.sleep(2)
+    rasp = rpiserver()
 
+    rasp.setup_water_sensor()
+
+    rasp.listening()
+
+    
