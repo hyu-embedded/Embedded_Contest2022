@@ -1,8 +1,17 @@
+from this import d
 import requests
 from enum import Enum
 from datetime import datetime
 import time
+import RPi.GPIO as GPIO
+from lib_nrf24 import NRF24
+import spidev
 
+
+GPIO.setmode(GPIO.BCM)
+
+water_sensor = 0x76
+ultra_sensor = 0x77
 
 class MSG_TYPE(Enum):
     RPI_SETUP_REQUEST = 0
@@ -76,18 +85,67 @@ class rpiClient:
 
     def __len__(self):
         return len(self.config['clients'])
-    
+
+class rpiserver:
+    def __init__(self):
+        self.pipes = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1],[0xF0, 0xF0, 0xF0, 0xF0, 0xE1]]
+        self.radio = NRF24(GPIO, spidev.SpiDev())
+
+    def radio_setup(self):
+        self.radio.begin(0, 17,4000000)
+        self.radio.setPayloadSize(32)
+        self.radio.setDataRate(NRF24.BR_1MBPS)
+        self.radio.setPALevel(NRF24.PA_MIN)
+
+        self.radio.setAutoAck(True)
+        self.radio.enableDynamicPayloads()
+        self.radio.enableAckPayload()
+        self.radio.openReadingPipe(1, self.pipes[1])
+
+        self.radio.printDetails()
+        self.radio.startListening()
+
+    def watersensor(self,channel):
+        self.radio.setChannel(channel)
+        
+    def listening(self):
+        while True:
+            while not self.radio.available(0):
+                
+                time.sleep(1/1000)
+                # print("WAIT FOR")
+            
+            receivedMessage = []
+            self.radio.read(receivedMessage, self.radio.getDynamicPayloadSize())
+            print("Received: {}".format(receivedMessage))
+
+            print("Translating our received Message into unicode characters...")
+            string = ""
+
+            for n in receivedMessage:
+                if (n >= 32 and n <=126):
+                    string += chr(n)
+            print("Our received message decodes to :{}".format(string))
 
 if __name__ == '__main__':
     
-    rasp = rpiClient()
-    LOGGING = True
+    # rasp = rpiClient()
+    # LOGGING = True
 
-    rasp.request_setup(LOGGING=LOGGING)
+    # rasp.request_setup(LOGGING=LOGGING)
 
-    while True:
+    # while True:
 
-        rasp.send_result(LOGGING=LOGGING)
+    #     rasp.send_result(LOGGING=LOGGING)
 
-        time.sleep(2)
+    #     time.sleep(2)
+    rasp = rpiserver()
+    rasp.radio_setup()
+    # message = 4
+    # if message == MSG_TYPE.LEVEL_SEND_RESULT:
+    rasp.watersensor(water_sensor)
+    # elif message == 2:
+        # rasp.ultrasensor(water_sensor)
+    rasp.listening()
 
+    
