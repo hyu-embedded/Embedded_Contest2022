@@ -18,10 +18,13 @@ class MapActivity : Activity() {
         var editText = findViewById<EditText>(R.id.editTextNumberDecimal)
 
 
+
+
         btn_run.setOnClickListener() {
             // 클릭시 동작할 코드
-            val text = editText.text
-            Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+            val distance: Int? = editText.text.toInt()
+            println(distance)
+            Toast.makeText(this, distance, Toast.LENGTH_SHORT).show()
 
         }
 
