@@ -12,7 +12,6 @@ const androidRouter = require('./routes/android')
 
 dotenv.config();
 
- 
 async function main() {
   await mongoose.connect(process.env.MONGO_URL);
 }

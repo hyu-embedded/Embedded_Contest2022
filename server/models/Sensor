@@ -6,6 +6,7 @@ const SensorSchema = new mongoose.Schema(
         loc: { type: Number },
         lat: { type: Number },
         floor: { type: Number },
+        waterlevel: { type: Number },
         status: { type: Number },
     },
     { timestamps: true }
@@ -13,4 +14,4 @@ const SensorSchema = new mongoose.Schema(
 )
 
 
-module.exports = mongoose.Model('Sensor', SensorSchema);
+module.exports = mongoose.model('Sensor', SensorSchema);
