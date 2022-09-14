@@ -73,6 +73,7 @@ class rpiClient:
             print(f'Send result to server...{msg}')
 
         res = requests.post(server_url, json=msg)
+        print(res.json())
         self.config['id'] = res.json()['id']
 
         if LOGGING:

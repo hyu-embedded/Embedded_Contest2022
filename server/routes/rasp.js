@@ -39,8 +39,10 @@ router.post('/start', async (req, res, next) => {
     try {
         const savedSensor = await newSensor.save();
         //res.status(201).json(savedSensor);
+        console.log(savedSensor)
         res.status(201).json({'id': id});
     } catch (err) {
+        console.log(err);
         res.status(500).json(err);
     }    
 
