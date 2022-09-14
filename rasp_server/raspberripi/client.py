@@ -3,12 +3,12 @@ import requests
 from enum import Enum
 from datetime import datetime
 import time
-import RPi.GPIO as GPIO
-from lib_nrf24 import NRF24
-import spidev
+#import RPi.GPIO as GPIO
+#from lib_nrf24 import NRF24
+#import spidev
 
 
-GPIO.setmode(GPIO.BCM)
+#GPIO.setmode(GPIO.BCM)
 
 water_sensor = 0x76
 ultra_sensor = 0x77
@@ -78,6 +78,16 @@ class rpiClient:
         if LOGGING:
             print(f'Get ID from server: {self.config["id"]}')
 
+    def run(self, LOGGING=False):
+
+        self.request_setup(LOGGING=LOGGING)
+
+        while True:
+
+            self.send_result(LOGGING=LOGGING)
+            time.sleep(2)
+
+
     def __update_timestamp(self):
         self.config['timestamp'] = time.mktime(datetime.now().timetuple())
         return self.config['timestamp']
@@ -129,23 +139,17 @@ class rpiserver:
 
 if __name__ == '__main__':
     
-    # rasp = rpiClient()
-    # LOGGING = True
-
-    # rasp.request_setup(LOGGING=LOGGING)
-
-    # while True:
-
-    #     rasp.send_result(LOGGING=LOGGING)
-
-    #     time.sleep(2)
-    rasp = rpiserver()
-    rasp.radio_setup()
-    # message = 4
-    # if message == MSG_TYPE.LEVEL_SEND_RESULT:
-    rasp.watersensor(water_sensor)
-    # elif message == 2:
-        # rasp.ultrasensor(water_sensor)
-    rasp.listening()
+    rasp = rpiClient()
+    rasp.run(LOGGING=True)
+    
+    
+    # rasp = rpiserver()
+    # rasp.radio_setup()
+    # # message = 4
+    # # if message == MSG_TYPE.LEVEL_SEND_RESULT:
+    # rasp.watersensor(water_sensor)
+    # # elif message == 2:
+    #     # rasp.ultrasensor(water_sensor)
+    # rasp.listening()
 
     
