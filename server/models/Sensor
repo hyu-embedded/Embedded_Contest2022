@@ -1,0 +1,16 @@
+const mongoose = require('mongoose')
+
+const SensorSchema = new mongoose.Schema(
+    {
+        id: { type: Number, required: true, unique: true },
+        loc: { type: Number },
+        lat: { type: Number },
+        floor: { type: Number },
+        status: { type: Number },
+    },
+    { timestamps: true }
+
+)
+
+
+module.exports = mongoose.Model('Sensor', SensorSchema);
