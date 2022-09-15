@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const Sensor = require("../models/Sensor");
 
 const rpiClient = require('../managers/rpiClient');
 
@@ -10,7 +11,7 @@ var rpiClients = {};
 
 //result
 
-router.post('/start', (req, res, next) => {
+router.post('/start', async (req, res, next) => {
     // var {pos, floor, num_of_devices} = req.body;
     
     // id += 1;
@@ -24,11 +25,30 @@ router.post('/start', (req, res, next) => {
     var num_of_devices = req.body.num_of_devices;
     
     console.log(`New clients with id ${id}:\nposition: loc=${pos['loc']}, lat=${pos['lat']}\nfloor=${floor}\nnumber of devices: ${num_of_devices}`);
-    res.json({'id': id});
-
     
+
+    const newSensor = new Sensor({
+        id: id,
+        loc: req.body.pos['loc'],
+        lat: req.body.pos['lat'],
+        floor: req.body.floor,
+        waterlevel: 0,
+        status: 0,
+    });
+
+    try {
+        const savedSensor = await newSensor.save();
+        //res.status(201).json(savedSensor);
+        console.log(savedSensor)
+        res.status(201).json({'id': id});
+    } catch (err) {
+        console.log(err);
+        res.status(500).json(err);
+    }    
+
 });
 
+// UPDATE
 router.post('/result', (req, res, next) => {
     console.log(req.body);
     res.send('Successfully get data');
