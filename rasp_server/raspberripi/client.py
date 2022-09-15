@@ -10,8 +10,8 @@ import spidev
 
 GPIO.setmode(GPIO.BCM)
 
-water_sensor = 0x76
-ultra_sensor = 0x77
+water_sensor_channel = 0x76
+ultra_sensor_channel = 0x77
 
 class MSG_TYPE(Enum):
     RPI_SETUP_REQUEST = 0
@@ -86,7 +86,7 @@ class rpiClient:
     def __len__(self):
         return len(self.config['clients'])
 
-class rpiserver:
+class rpiServer:
     def __init__(self):
         self.pipes = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1],[0xF0, 0xF0, 0xF0, 0xF0, 0xE1]]
         self.radio = NRF24(GPIO, spidev.SpiDev())
@@ -139,11 +139,11 @@ if __name__ == '__main__':
     #     rasp.send_result(LOGGING=LOGGING)
 
     #     time.sleep(2)
-    rasp = rpiserver()
+    rasp = rpiServer()
     rasp.radio_setup()
     # message = 4
     # if message == MSG_TYPE.LEVEL_SEND_RESULT:
-    rasp.watersensor(water_sensor)
+    rasp.watersensor(water_sensor_channel)
     # elif message == 2:
         # rasp.ultrasensor(water_sensor)
     rasp.listening()

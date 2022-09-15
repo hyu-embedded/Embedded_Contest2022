@@ -26,10 +26,10 @@
 
         <Button
             android:id="@+id/btn_search"
-            android:layout_width="0dp"
+            android:layout_width="53dp"
             android:layout_height="50dp"
             android:layout_weight="3"
-            android:text="탐색" />
+            android:text="위치가져오기" />
     </LinearLayout>
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
