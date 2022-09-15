@@ -113,14 +113,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val latLng = LatLng(mLastLocation.latitude, mLastLocation.longitude)
         val latLng_1 = LatLng(mLastLocation.latitude+0.0001, mLastLocation.longitude+0.0001)
         val position: CameraPosition = CameraPosition.Builder()
-            .target(latLng).zoom(16f).build()
+            .target(latLng).zoom(17f).build()
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position))
         mMap.addMarker(MarkerOptions()
             .position(latLng)
             .title("yeongbin"))
         mMap.addMarker(MarkerOptions()
             .draggable(true).icon(BitmapDescriptorFactory.defaultMarker
-                (BitmapDescriptorFactory.HUE_))
+                (BitmapDescriptorFactory.HUE_BLUE))
             .position(latLng_1)
             .title("yeongbin"))
     }
@@ -176,17 +176,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-//        mLastLocation = location
-//        val place = LatLng(mLastLocation.latitude, mLastLocation.longitude)
-//        mMap.addMarker(MarkerOptions().position(place).title("Me"))
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(place))
-        // Add a marker in HYU IoT Lab and move the camera
-//        val sydney = LatLng(37.55, 127.0)
-//        val position: CameraPosition = CameraPosition.Builder()
-//            .target(sydney).zoom(16f).build()
-//        mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(position))
-//        mMap.addMarker(MarkerOptions()
-//            .position(sydney)
-//            .title("Marker in Sydney"))
+
     }
 }
