@@ -12,14 +12,13 @@ const androidRouter = require('./routes/android')
 
 dotenv.config();
 
-async function main() {
-  await mongoose.connect(process.env.MONGO_URL);
-}
+// async function main() {
+//   await mongoose.connect(process.env.MONGO_URL);
+// }
 
-main()
-    .then(()=>console.log("DB connection Successfull!!"))
-    .catch(err => console.log(err));
-
+// main()
+//     .then(()=>console.log("DB connection Successfull!!"))
+//     .catch(err => console.log(err));
 
 
 app.use(bodyParser.urlencoded({extended: true}))
@@ -28,6 +27,7 @@ app.use(cors());
 
 app.use(indexRouter);
 app.use('/rasp', raspRouter);
+app.use('/android', androidRouter);
 
 
 const port = process.env.PORT || 3000;
