@@ -4,22 +4,22 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
+import android.net.wifi.WifiManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
+import android.text.format.Formatter
 import android.util.Log
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.*
-
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.Volley
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -28,6 +28,9 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import org.json.JSONArray
+import org.json.JSONObject
+
 
 // https://developers.google.com/maps/documentation/android-sdk/start#maps_android_mapsactivity-kotlin
 
@@ -48,25 +51,32 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         }
-//        val edt_distance : EditText = findViewById(R.id.editText_distance)
-//        val btn_search : Button = findViewById(R.id.btn_search)
-//
-//        var distance : String = edt_distance.text.toString()
-//        btn_search.setOnClickListener() {
-//            var distance : String = edt_distance.text.toString()
-//            Toast.makeText(this, distance, Toast.LENGTH_SHORT).show()
-//        }
+        val edt_distance : EditText = findViewById(R.id.editText_distance)
+        val btn_search : Button = findViewById(R.id.btn_search)
 
-        button = findViewById(R.id.btn_search)
+        var distance : String = edt_distance.text.toString()
+        btn_search.setOnClickListener() {
+            //var distance : String = edt_distance.text.toString()
+            //Toast.makeText(this, distance, Toast.LENGTH_SHORT).show()
+            //var url = "http://127.0.0.1:3000/android"
+            var url = "http://172.16.161.167:3000/android"
 
-        button.setOnClickListener {
+            requestInfo(url, 0)
+
+
             if (checkPermissionForLocation(this)) {
                 startLocationUpdates()
-
             }
         }
+//        button = findViewById(R.id.btn_search)
+//
+//        button.setOnClickListener {
+//            if (checkPermissionForLocation(this)) {
+//                startLocationUpdates()
+//            }
+//        }
 
-
+       
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -81,7 +91,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             && ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
         }
-        Log.d("sta","asdasd")
 
         // 기기의 위치에 관한 정기 업데이트를 요청하는 메서드 실행
         // 지정한 루퍼 스레드(Looper.myLooper())에서 콜백(mLocationCallback)으로 위치 업데이트를 요청
@@ -177,5 +186,32 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
+    }
+
+
+    fun requestInfo(url: String, distance: Int) {
+
+        val jsonArrayRequest = JsonArrayRequest(
+            Request.Method.GET,
+            url,
+            null,
+            Response.Listener<JSONArray> { response ->
+                for (i in 0 until response.length()) {
+                    val jsonObject = response[i] as JSONObject
+                    val id = jsonObject.getString("id")
+                    val loc = jsonObject.getString("loc")
+                    val lat = jsonObject.getString("lat")
+                    val floor = jsonObject.getString("floor")
+                    val waterlevel = jsonObject.getString("waterlevel")
+                    val status = jsonObject.getString("status")
+
+                    Log.d("http", "ID: $id\nloc: $loc, lat: $lat, floor: $floor\nwaterlevel: $waterlevel, status: $status")
+                }
+            },
+            Response.ErrorListener { error -> Log.d("error", "error...$error") }
+        )
+
+        val queue = Volley.newRequestQueue(this)
+        queue.add(jsonArrayRequest)
     }
 }
