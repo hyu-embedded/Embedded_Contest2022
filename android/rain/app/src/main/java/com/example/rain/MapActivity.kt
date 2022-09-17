@@ -59,7 +59,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             //var distance : String = edt_distance.text.toString()
             //Toast.makeText(this, distance, Toast.LENGTH_SHORT).show()
             //var url = "http://127.0.0.1:3000/android"
-            var url = "http://172.16.161.167:3000/android"
+            var url = "http://10.0.2.2:3000/android"
 
             requestInfo(url, 0)
 
@@ -76,7 +76,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 //            }
 //        }
 
-       
+
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -187,7 +187,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
 
     }
-
 
     fun requestInfo(url: String, distance: Int) {
 
