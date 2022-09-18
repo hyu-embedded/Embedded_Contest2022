@@ -28,6 +28,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.CircleOptions
+
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -52,38 +54,48 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         }
-        val edt_distance : EditText = findViewById(R.id.editText_distance)
-        val btn_search : Button = findViewById(R.id.btn_search)
 
-        var distance : String = edt_distance.text.toString()
-        btn_search.setOnClickListener() {
+//        val edt_distance : EditText = findViewById(R.id.editText_distance)
+        val btn_searchLocation : Button = findViewById(R.id.btn_search)
+        val btn_zoomLoaction : Button = findViewById(R.id.btn_location)
+        btn_zoomLoaction.isEnabled = false
+//        var distance : String = edt_distance.text.toString()
+        btn_searchLocation.setOnClickListener() {
             //var distance : String = edt_distance.text.toString()
             //Toast.makeText(this, distance, Toast.LENGTH_SHORT).show()
             //var url = "http://127.0.0.1:3000/android"
-            var url = "http://10.0.2.2:3000/android"
-
-            requestInfo(url, 0)
+//            var url = "http://10.0.2.2:3000/android"
+            btn_zoomLoaction.isEnabled = true
+//            requestInfo(url, 0)
 
             if (checkPermissionForLocation(this)) {
                 startLocationUpdates()
-                button.isEnabled = false
+//                button.isEnabled = false
             }
         }
+//        button.performClick()
 
-        button.performClick()
-//        button = findViewById(R.id.btn_search)
-//
-//        button.setOnClickListener {
-//            if (checkPermissionForLocation(this)) {
-//                startLocationUpdates()
-//            }
-//        }
+
 
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+
+        btn_zoomLoaction.setOnClickListener(){
+            if(mLastLocation != null) {
+                myLocationUpdates(mLastLocation)
+            }
+
+        }
+    }
+    private fun myLocationUpdates(location: Location) {
+        val latLng = LatLng(location.latitude, location.longitude)
+        val position: CameraPosition = CameraPosition.Builder()
+            .target(latLng).zoom(16f).build()
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position))
+//        mMap.setOnMarkerClickListener { this }
     }
 
     private fun startLocationUpdates() {
@@ -115,25 +127,31 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (location != null) {
             mLastLocation = location
         }
-        moveMap(mLastLocation)
+        val latLng = LatLng(mLastLocation.latitude, mLastLocation.longitude)
+        mMap.addMarker(MarkerOptions()
+            .position(latLng)
+            .title("asdasdasd")
+            .snippet("Population"))?.showInfoWindow()
+        val circleOptions = CircleOptions()
+            .center(latLng)
+            .radius(30.0)
+            .strokeWidth(40F)
+            .strokeColor(0xffff0000.toInt()) //alpha, R, G, B = 0x xx xx xx xx
+            .fillColor(0xff000000.toInt())
+//            .strokeColor(255000)
+        mMap.addCircle(circleOptions)
+//        indicateLocation(location information)
     }
-
-    private fun moveMap(location: Location?){
+// TODO: locate other information
+    private fun indicateLocation(location: Location?){
         if (location != null) {
             mLastLocation = location
         }
         val latLng = LatLng(mLastLocation.latitude, mLastLocation.longitude)
-        val latLng_1 = LatLng(mLastLocation.latitude+0.0001, mLastLocation.longitude+0.0001)
-        val position: CameraPosition = CameraPosition.Builder()
-            .target(latLng).zoom(17f).build()
-        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position))
-        mMap.addMarker(MarkerOptions()
-            .position(latLng)
-            .title("yeongbin"))
         mMap.addMarker(MarkerOptions()
             .draggable(true).icon(BitmapDescriptorFactory.defaultMarker
                 (BitmapDescriptorFactory.HUE_BLUE))
-            .position(latLng_1)
+            .position(latLng)
             .title("yeongbin"))
     }
 
