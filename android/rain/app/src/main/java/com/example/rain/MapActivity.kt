@@ -48,6 +48,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_map)
         mLocationRequest =  LocationRequest.create().apply {
 
+            interval = 5000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         }
@@ -63,11 +64,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
             requestInfo(url, 0)
 
-
             if (checkPermissionForLocation(this)) {
                 startLocationUpdates()
+                button.isEnabled = false
             }
         }
+
+        button.performClick()
 //        button = findViewById(R.id.btn_search)
 //
 //        button.setOnClickListener {
