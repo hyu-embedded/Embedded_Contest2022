@@ -16,7 +16,8 @@ const int num_iteration = 100;
 int angle = 0;
 //float distance = 0;
 
-float height = 180;
+float height = 250;
+float dist_mtow = 180;
 const float alpha = 0.05;
 float waterlevel = 0;
 
@@ -42,7 +43,7 @@ void setup() {
   radio.powerUp();
 
   Serial.println("Measure actual height");
-  height = get_height(num_iteration);
+  //height = get_height(num_iteration);
   Serial.print("Actual height is about: ");
   Serial.print(height);
   Serial.println("cm");
@@ -88,7 +89,7 @@ float get_height(int num_iteration) {
         unsigned long duration = pulseIn(echo, HIGH);
         float distance = ((float)(340*duration)/10000)/2;
 
-        if (distance >= (1-alpha)*height && distance <= (1+alpha)*height) {
+        if (distance >= (1-alpha)*dist_mtow && distance <= (1+alpha)*dist_mtow) {
             sum += distance;
             count++;
         }
