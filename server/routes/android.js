@@ -21,7 +21,7 @@ router.get('/login', (req, res, next) => {
     var password = req.body.password;
     
     // Do login
-    if (id == 'yunsang' && password == '1234') {
+    if (req.query.id == 'yunsang' && req.query.password == '1234') {
         res.status(200).send('OK');
     } else {
         res.status(404).send('Not Found');
