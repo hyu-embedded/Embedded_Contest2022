@@ -15,7 +15,7 @@
         android:paddingBottom="5dip">
 
         <ImageView
-            android:id="@+id/clientPic"
+            android:id="@+id/waterstatus"
             android:layout_width="60dip"
             android:layout_height="60dip"
             android:src="@drawable/fire"
@@ -41,7 +41,7 @@
                     android:layout_marginLeft="5dip"
                     android:background="@drawable/ic_waterdrop"/>
                 <TextView
-                    android:id="@+id/mobileTxt"
+                    android:id="@+id/waterlevelTxt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="+91-98XXXXX200"
@@ -63,7 +63,7 @@
                     android:layout_marginLeft="5dip"
                     android:background="@drawable/ic_floor"/>
                 <TextView
-                    android:id="@+id/addressTxt"
+                    android:id="@+id/floorTxt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="android@gmail.com"
