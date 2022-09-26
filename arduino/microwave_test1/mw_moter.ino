@@ -3,10 +3,8 @@
 #include <nRF24L01.h>
 
 #include <SPI.h>
-#include <Servo.h>
 
 
-Servo servo;
 RF24 radio(7,8);
 const int trig = 6;
 const int echo = 5;
@@ -17,7 +15,7 @@ int angle = 0;
 //float distance = 0;
 
 float height = 250;  // layer height
-float dist_mtow = 180; // height installing water sensor
+float dist_mtow; // height installing water sensor
 const float alpha = 0.05;
 float waterlevel = 0;
 
@@ -30,9 +28,6 @@ void setup() {
   // Set Microwave Sensor
   pinMode(trig, OUTPUT);
   pinMode(echo, INPUT);
-
-  // Set sg90 Servo motor
-  servo.attach(2);
 
   // Set RF24
   radio.begin();
@@ -53,6 +48,7 @@ void setup() {
   Serial.print("Waterlevel is about: ");
   Serial.print(waterlevel);
   Serial.println("cm");
+  dist_mtow = 180; // height installing water sensor
 
 }
 
@@ -94,8 +90,9 @@ float get_height(int num_iteration) {
         }
         delay(100); 
     }
-    float result = sum / num_iteration;
-    return result;
+    dist_mtow = sum / num_iteration;
+
+    return dist_mtow;
 }
 
 float get_waterlevel(int num_iteration) {
