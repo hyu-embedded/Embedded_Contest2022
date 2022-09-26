@@ -18,6 +18,7 @@ import androidx.core.app.ActivityCompat
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.JsonRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -64,9 +65,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             //var distance : String = edt_distance.text.toString()
             //Toast.makeText(this, distance, Toast.LENGTH_SHORT).show()
             //var url = "http://127.0.0.1:3000/android"
-//            var url = "http://10.0.2.2:3000/android"
+            var url = "http://10.0.2.2:3000/android"
             btn_zoomLoaction.isEnabled = true
-//            requestInfo(url, 0)
+            requestInfo(url, 0)
 
             if (checkPermissionForLocation(this)) {
                 startLocationUpdates()
@@ -210,7 +211,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun requestInfo(url: String, distance: Int) {
-
+//        val requesT = JsonRequest(
+//            Request.Method.GET,
+//            url,
+//        )
         val jsonArrayRequest = JsonArrayRequest(
             Request.Method.GET,
             url,

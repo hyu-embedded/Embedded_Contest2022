@@ -16,7 +16,7 @@ router.get('/', (req, res, next) => {
 
 
 router.get('/login', (req, res, next) => {
-    console.log(``)
+    console.log(`Login request:\nID: ${req.query.id}, Password: ${req.query.password}`)
     var id = req.body.id;
     var password = req.body.password;
     
