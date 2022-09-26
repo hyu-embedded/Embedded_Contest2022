@@ -31,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -52,6 +53,7 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
     private lateinit var info_btn_select: Button
     private var neighbors = JSONObject().put("count", 0)
 
+    private lateinit var btn_zoomin: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +70,15 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
 
         this.infoWindow = layoutInflater.inflate(R.layout.create_infowindow, null) as View
         this.info_btn_select = infoWindow.findViewById(R.id.btn_select) as Button
+
+        this.btn_zoomin = findViewById(R.id.btn_zoom) as Button
+        this.btn_zoomin.isEnabled = false
+        this.btn_zoomin.setOnClickListener(){
+            if(location != null) {
+                myLocationUpdates(location)
+            }
+        }
+
 
 
         getLocation()
@@ -89,13 +100,16 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
 
     override fun onLocationChanged(location: Location) {
         this.location = location
+        if (this.location != null) {
+            this.btn_zoomin.isEnabled = true
+        }
         Toast.makeText(this, "${this.location.latitude}", Toast.LENGTH_SHORT).show()
 
         // Mark current position
         val cur_pos = LatLng(this.location.latitude, this.location.longitude)
         this.map.addMarker(MarkerOptions()
             .position(cur_pos))
-        this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(cur_pos, this.zoom))
+        //this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(cur_pos, this.zoom))
 
         for (i:Int in 0 until this.neighbors.getInt("count")) {
             var target: JSONObject = this.neighbors.getJSONObject("${i}")
@@ -153,6 +167,12 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
         }
     }
 
+    private fun myLocationUpdates(location: Location) {
+        val latLng = LatLng(location.latitude, location.longitude)
+        val position: CameraPosition = CameraPosition.Builder()
+            .target(latLng).zoom(16f).build()
+        map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
+    }
 
     private fun requestInfo(url: String, lat: Double, loc: Double, zoom: Float) {
 
