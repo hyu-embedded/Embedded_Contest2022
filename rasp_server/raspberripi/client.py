@@ -3,12 +3,12 @@ import requests
 from enum import Enum
 from datetime import datetime
 import time
-#import RPi.GPIO as GPIO
-#from lib_nrf24 import NRF24
-#import spidev
+import RPi.GPIO as GPIO
+from lib_nrf24 import NRF24
+import spidev
 
 
-#GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BCM)
 
 water_sensor_channel = 0x76
 ultra_sensor_channel = 0x77
@@ -97,12 +97,21 @@ class rpiClient:
     def __len__(self):
         return len(self.config['clients'])
 
+
+
 class rpiServer:
-    def __init__(self):
+    def __init__(self, water_channel, micro_channel, delay=1/1000, threshold = 0, height = 300):
         self.pipes = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1],[0xF0, 0xF0, 0xF0, 0xF0, 0xE1]]
         self.radio = NRF24(GPIO, spidev.SpiDev())
+        self.water_channel = water_channel
+        self.micro_channel = micro_channel
+        self.delay = delay
+        self.threshold = threshold
+        self.height = height
+
 
     def radio_setup(self):
+        
         self.radio.begin(0, 17,4000000)
         self.radio.setPayloadSize(32)
         self.radio.setDataRate(NRF24.BR_1MBPS)
@@ -112,17 +121,86 @@ class rpiServer:
         self.radio.enableDynamicPayloads()
         self.radio.enableAckPayload()
         self.radio.openReadingPipe(1, self.pipes[1])
-
+        
         self.radio.printDetails()
         self.radio.startListening()
 
-    def watersensor(self,channel):
+    def setChannel(self,channel):
         self.radio.setChannel(channel)
+
+
+    def getMessage(self, LOGGING=False, target=""):
+        receivedMessage = []
+        self.radio.read(receivedMessage, self.radio.getDynamicPayloadSize())
         
+        message = ""
+        
+        for ch in receivedMessage:
+            if (ch >= 32 and ch <= 126):
+                message += chr(ch)
+
+        if LOGGING:
+            print(f"Received from {target}: {message}")
+
+        
+        return int(message)
+
+        
+    def run_water(self, LOGGING=False):
+        print('Getting data from water level sensor...')
+        
+        self.radio.setChannel(self.water_channel)
+        start_micro = False
+
+        while start_micro == False:
+            while not self.radio.available(0):
+                time.sleep(self.delay)
+                waterlevel = self.getMessage(LOGGING, target="water level sensor")
+
+                if waterlevel >= self.threshold:
+                    start_micro = True
+                    break
+
+
+
+    def run_micro(self, LOGGING=False):
+        print('Getting data from micro sensor...')
+        self.radio.setChannel(self.micro_channel)
+
+        find_start = False
+        start = 0
+        waterlevel = 0
+
+        while True:
+            while not self.radio.available(0):                
+                time.sleep(self.delay)
+                print("--")
+
+                
+                data = self.getMessage(LOGGING, target="microwave sensor")
+                if find_start == False:
+                    start = data
+                    find_start = True
+
+        
+                waterlevel = start - data + self.threshold
+            
+                print(f'Water level: {waterlevel}')
+                
+
+
+    def run(self, LOGGING=False):
+        
+        self.run_water(LOGGING)
+        self.run_micro(LOGGING)
+
+        
+
+
     def listening(self):
+        
         while True:
             while not self.radio.available(0):
-                
                 time.sleep(1/1000)
                 # print("WAIT FOR")
             
@@ -136,21 +214,33 @@ class rpiServer:
             for n in receivedMessage:
                 if (n >= 32 and n <=126):
                     string += chr(n)
-            print("Our received message decodes to :{}".format(string))
+                    print(string)
+                    info = float(string)
+            print("Our received message decodes to :{}".format(info))
+
+            if (info > 500):
+                break
 
 if __name__ == '__main__':
+
+    # rasp = rpiClient()
+    # rasp.run(LOGGING=True)
     
-    rasp = rpiClient()
-    rasp.run(LOGGING=True)
     
-    
-    # rasp = rpiserver()
-    # rasp.radio_setup()
+    rasp = rpiServer(water_channel=0x76, micro_channel=0x77, delay=1/1000, threshold=400)
+    rasp.radio_setup()
     # # message = 4
-    # # if message == MSG_TYPE.LEVEL_SEND_RESULT:
-    # rasp.watersensor(water_sensor)
+    # # if message == MSG_TYPE.LEVEL_SEND_RESULT: 
+    rasp.setChannel(water_sensor_channel)
     # # elif message == 2:
     #     # rasp.ultrasensor(water_sensor)
-    # rasp.listening()
+    rasp.listening()
+    print("hi1")
+    rasp.pipes[1][4] = 0xE2
+    rasp.radio_setup()
+    # rasp.setChannel(ultra_sensor_channel)
+    rasp.listening()
+    print("hi2")
 
-    
+
+    #rasp.run(LOGGING=True)    
