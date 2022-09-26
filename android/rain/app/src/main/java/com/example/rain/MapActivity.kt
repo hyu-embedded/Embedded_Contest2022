@@ -10,9 +10,9 @@ import android.os.Bundle
 import android.os.Looper
 import android.text.format.Formatter
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.android.volley.Request
@@ -41,10 +41,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var mFusedLocationProviderClient: FusedLocationProviderClient? = null // 현재 위치를 가져오기 위한 변수
     private lateinit var mMap: GoogleMap
+    private lateinit var infoWindow: ViewGroup
+    private lateinit var info_waterlvel: TextView
+    private lateinit var info_floor: TextView
+    private lateinit var info_btn_select: Button
+    private lateinit var info_btn_done: Button
+    private lateinit var infoButtonListener: GoogleMap.OnInfoWindowClickListener
+
     lateinit var button: Button
     lateinit var mLastLocation: Location // 위치 값을 가지고 있는 객체
     private lateinit var mLocationRequest: LocationRequest // 위치 정보 요청의 매개변수를 저장하는
     private val REQUEST_PERMISSION_LOCATION = 10
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +62,22 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
             interval = 5000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
+        }
+        val mapLayout = findViewById<LinearLayout>(R.id.mapLayout)
+
+        val layoutInflater: LayoutInflater = LayoutInflater.from(applicationContext)
+        infoWindow = layoutInflater.inflate(R.layout.create_infowindow, mapLayout, false) as ViewGroup
+        info_waterlvel = infoWindow.findViewById(R.id.waterlevelTxt) as TextView
+        info_floor = infoWindow.findViewById(R.id.floorTxt) as TextView
+        info_btn_select = infoWindow.findViewById(R.id.btn_select) as Button
+        info_btn_done = infoWindow.findViewById(R.id.btn_done) as Button
+
+        info_btn_select.setOnClickListener() {
+
+        }
+
+        info_btn_done.setOnClickListener() {
 
         }
 
@@ -129,6 +154,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             mLastLocation = location
         }
         val latLng = LatLng(mLastLocation.latitude, mLastLocation.longitude)
+        //val latLng = LatLng(37.555940, 127.049470)
+
         mMap.addMarker(MarkerOptions()
             .position(latLng)
             .title("asdasdasd")
