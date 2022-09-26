@@ -10,6 +10,10 @@ var id = 0;
 var rpiClients = {};
 
 //result
+router.get('/', (req, res, next) => {
+    res.json({'id': 'yunsang'})
+})
+
 
 router.post('/start', async (req, res, next) => {
     // var {pos, floor, num_of_devices} = req.body;

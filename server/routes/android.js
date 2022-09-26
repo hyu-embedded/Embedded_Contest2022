@@ -1,16 +1,26 @@
 const express = require('express');
 const router = express.Router();
 
+var testData = {
+    'count': 2,
+    '0': {id: 0, loc: 37.42, lat: -120.08, floor: 1, waterlevel: 24, status: 3, isAssigned: false},
+    '1': {id: 1, loc: 37.422182, lat: -122.0826, floor: 2, waterlevel: 24, status: 3, isAssigned: true},
+}
+
+
 router.get('/', (req, res, next) => {
     console.log(`Android request info...\n`)
 
-    res.json([
-        {id: 0, loc: 35, lat: 120, floor: 1, waterlevel: 24, status: 3, isAssigned: false},
-        {id: 1, loc: 35, lat: 121, floor: 2, waterlevel: 24, status: 3, isAssigned: true},
-        {id: 2, loc: 35, lat: 122, floor: 4, waterlevel: 42, status: 5, isAssigned: false},
-        {id: 3, loc: 35, lat: 123, floor: 3, waterlevel: 52, status: 3, isAssigned: false},
-        {id: 4, loc: 35, lat: 124, floor: 5, waterlevel: 30, status: 1, isAssigned: true}
-    ])
+    // res.json([
+    //     {id: 0, loc: 35, lat: 120, floor: 1, waterlevel: 24, status: 3, isAssigned: false},
+    //     {id: 1, loc: 35, lat: 121, floor: 2, waterlevel: 24, status: 3, isAssigned: true},
+    //     {id: 2, loc: 35, lat: 122, floor: 4, waterlevel: 42, status: 5, isAssigned: false},
+    //     {id: 3, loc: 35, lat: 123, floor: 3, waterlevel: 52, status: 3, isAssigned: false},
+    //     {id: 4, loc: 35, lat: 124, floor: 5, waterlevel: 30, status: 1, isAssigned: true}
+    // ])
+    console.log(`Query: ${req.query.lat}`)
+
+    res.json(testData)
 
 })
 
