@@ -1,3 +1,4 @@
+from inspect import walktree
 from this import d
 import requests
 from enum import Enum
@@ -10,8 +11,10 @@ import time
 
 #GPIO.setmode(GPIO.BCM)
 
-water_sensor_channel = 0x76
-ultra_sensor_channel = 0x77
+sensor_channel = 0x76
+water_pipe = 0xE1
+ultra_pipe = 0xE2
+
 
 class MSG_TYPE(Enum):
     RPI_SETUP_REQUEST = 0
@@ -101,8 +104,10 @@ class rpiServer:
     def __init__(self):
         self.pipes = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1],[0xF0, 0xF0, 0xF0, 0xF0, 0xE1]]
         self.radio = NRF24(GPIO, spidev.SpiDev())
+        self.radio.setChannel(sensor_channel)
 
-    def radio_setup(self):
+    def radio_setup(self, pipe):
+        self.pipes[1][4] = pipe
         self.radio.begin(0, 17,4000000)
         self.radio.setPayloadSize(32)
         self.radio.setDataRate(NRF24.BR_1MBPS)
@@ -116,10 +121,8 @@ class rpiServer:
         self.radio.printDetails()
         self.radio.startListening()
 
-    def watersensor(self,channel):
-        self.radio.setChannel(channel)
         
-    def listening(self):
+    def water_listening(self):
         while True:
             while not self.radio.available(0):
                 
@@ -140,17 +143,12 @@ class rpiServer:
 
 if __name__ == '__main__':
     
-    rasp = rpiClient()
-    rasp.run(LOGGING=True)
+    # rasp = rpiClient()
+    # rasp.run(LOGGING=True)
     
     
-    # rasp = rpiserver()
-    # rasp.radio_setup()
-    # # message = 4
-    # # if message == MSG_TYPE.LEVEL_SEND_RESULT:
-    # rasp.watersensor(water_sensor)
-    # # elif message == 2:
-    #     # rasp.ultrasensor(water_sensor)
-    # rasp.listening()
-
+    rasp = rpiServer()
+    rasp.radio_setup(water_pipe)
+    rasp.water_listening()
+    rasp.radio_setup(ultra_pipe)
     

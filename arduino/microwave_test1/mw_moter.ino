@@ -68,13 +68,12 @@ void loop() {
   Serial.print(waterlevel);
   Serial.println("cm");
 
-  String result = String(int(waterlevel * 100), DEC);
+    String result = String(int(waterlevel * 100), DEC);
 
   for (int i = 0; i < 20; i++) {
       radio.write(result.c_str(), result.length());
       delay(50);
   }
-
 }
 
 float get_height(int num_iteration) {
