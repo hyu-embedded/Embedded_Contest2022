@@ -16,8 +16,8 @@ const int num_iteration = 100;
 int angle = 0;
 //float distance = 0;
 
-float height = 250;
-float dist_mtow = 180;
+float height = 250;  // layer height
+float dist_mtow = 180; // height installing water sensor
 const float alpha = 0.05;
 float waterlevel = 0;
 
@@ -86,7 +86,7 @@ float get_height(int num_iteration) {
         digitalWrite(trig, HIGH);
         delayMicroseconds(10);
         unsigned long duration = pulseIn(echo, HIGH);
-        float distance = ((float)(340*duration)/10000)/2;
+        float distance = ((float)(340*duration)/100)/2;
 
         if (distance >= (1-alpha)*dist_mtow && distance <= (1+alpha)*dist_mtow) {
             sum += distance;

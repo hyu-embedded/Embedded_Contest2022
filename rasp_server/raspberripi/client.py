@@ -104,17 +104,15 @@ class rpiClient:
 
 class rpiServer:
     def __init__(self, water_channel, micro_channel, delay=1/1000, threshold = 0, height = 300):
-        self.pipes = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1],[0xF0, 0xF0, 0xF0, 0xF0, 0xE1]]
+        self.pipes = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1],[0xF0, 0xF0, 0xF0, 0xF0, 0x00]]
         self.radio = NRF24(GPIO, spidev.SpiDev())
-        self.water_channel = water_channel
-        self.micro_channel = micro_channel
         self.delay = delay
         self.threshold = threshold
         self.height = height
 
 
-    def radio_setup(self):
-        
+    def radio_setup(self,pipe):
+        self.pipes[1][4] = pipe
         self.radio.begin(0, 17,4000000)
         self.radio.setPayloadSize(32)
         self.radio.setDataRate(NRF24.BR_1MBPS)
@@ -127,9 +125,6 @@ class rpiServer:
         
         self.radio.printDetails()
         self.radio.startListening()
-
-    def setChannel(self,channel):
-        self.radio.setChannel(channel)
 
 
     def getMessage(self, LOGGING=False, target=""):
@@ -200,7 +195,7 @@ class rpiServer:
         
 
 
-    def listening(self):
+    def water_listening(self):
         
         while True:
             while not self.radio.available(0):
@@ -219,10 +214,38 @@ class rpiServer:
                     string += chr(n)
                     print(string)
                     info = float(string)
-            print("Our received message decodes to :{}".format(info))
+            print("water energy:{}".format(info))
 
             if (info > 500):
                 break
+
+    def ultra_listening(self):
+        
+        while True:
+            iteration = 10
+            sum_height = 0
+            for i in range(iteration):
+                while not self.radio.available(0):
+                    time.sleep(1/1000)
+                    # print("WAIT FOR")
+                
+                receivedMessage = []
+                self.radio.read(receivedMessage, self.radio.getDynamicPayloadSize())
+                print("Received: {}".format(receivedMessage))
+
+                print("Translating our received Message into unicode characters...")
+                string = ""
+
+                for n in receivedMessage:
+                    if (n >= 32 and n <=126):
+                        string += chr(n)
+                        print(string)
+                info = float(string)/100
+                sum_height += info
+            avg_height = sum_height/iteration
+            print("water average height :{}cm".format(avg_height))
+            return avg_height
+
 
 if __name__ == '__main__':
     # rasp = rpiClient()
@@ -230,19 +253,17 @@ if __name__ == '__main__':
     
     
     rasp = rpiServer(water_channel=0x76, micro_channel=0x77, delay=1/1000, threshold=400)
-    rasp.radio_setup()
-    # # message = 4
-    # # if message == MSG_TYPE.LEVEL_SEND_RESULT: 
-    rasp.setChannel(water_sensor_channel)
+    rasp.radio_setup(water_pipe)
     # # elif message == 2:
     #     # rasp.ultrasensor(water_sensor)
-    rasp.listening()
+    rasp.water_listening()
     print("hi1")
-    rasp.pipes[1][4] = 0xE2
-    rasp.radio_setup()
+    rasp.radio_setup(ultra_pipe)
     # rasp.setChannel(ultra_sensor_channel)
-    rasp.listening()
+    while(1):
+        height = rasp.ultra_listening()
+        # communication with node server
     print("hi2")
-
+    
 
     #rasp.run(LOGGING=True)    
