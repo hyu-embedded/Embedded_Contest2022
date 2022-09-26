@@ -32,9 +32,10 @@ router.get('/login', (req, res, next) => {
     
     // Do login
     if (req.query.id == 'yunsang' && req.query.password == '1234') {
-        res.status(200).send('OK');
+        console.log("okokok");
+        res.json({"status":"ok"})
     } else {
-        res.status(404).send('Not Found');
+        res.json({"status":"error"})
     }
 
 })
