@@ -3,8 +3,8 @@ const router = express.Router();
 
 var testData = {
     'count': 2,
-    '0': {id: 0, loc: 37.42, lat: -120.08, floor: 1, waterlevel: 24, status: 3, isAssigned: false},
-    '1': {id: 1, loc: 37.422182, lat: -122.0826, floor: 2, waterlevel: 24, status: 3, isAssigned: true},
+    '0': {id: 0, lat: 37.421946, loc: -122.084573, floor: 1, waterlevel: 24, status: 5, isAssigned: false},
+    '1': {id: 1, lat: 37.422182, loc: -122.0826, floor: 2, waterlevel: 24, status: 3, isAssigned: true},
 }
 
 
@@ -50,9 +50,16 @@ router.get('/search', (req, res, next) => {
     position: position: loc=${pos['loc']}, lat=${pos['lat']}\n
     distance: ${distance}`);
 
+});
 
 
 
+router.get('/update', (req, res, next) => {
+    var id = req.query.id;
+    
+    testData[`${id}`].status = -1;
+    console.log(`testData: ${JSON.stringify(testData)}`)
+    res.json(testData);
 });
 
 

@@ -1,28 +1,26 @@
 package com.example.rain
 
 import android.Manifest
-import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.android.volley.Request
 import com.android.volley.Response
-import com.android.volley.toolbox.Volley
-import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -31,13 +29,10 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.CircleOptions
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import org.json.JSONArray
+import com.google.android.gms.maps.model.*
 import org.json.JSONObject
 import kotlin.concurrent.thread
+
 
 class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
 
@@ -52,6 +47,8 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
     private lateinit var infoTitle: TextView
     private lateinit var info_btn_select: Button
     private var neighbors = JSONObject().put("count", 0)
+    private lateinit var card_view: CardView
+
 
     private lateinit var btn_zoomin: Button
 
@@ -79,7 +76,8 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
             }
         }
 
-
+        this.card_view = findViewById(R.id.card_view) as CardView
+        card_view.visibility = View.INVISIBLE
 
         getLocation()
 
@@ -96,6 +94,33 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
 
     override fun onMapReady(p0: GoogleMap) {
         map = p0
+
+        map!!.setOnMarkerClickListener(object: GoogleMap.OnMarkerClickListener{
+            override fun onMarkerClick(p1: Marker): Boolean {
+                card_view.visibility = View.VISIBLE
+                var text_waterlevel = findViewById<TextView>(R.id.waterlevelTxt)
+                var text_floor = findViewById<TextView>(R.id.floorTxt)
+                var btn_choose = findViewById<Button>(R.id.btn_choose)
+
+                var arr = p1.tag.toString().split("/")
+                var t_id = arr[0]
+                text_waterlevel.text = arr[1]
+                text_floor.text = arr[2]
+
+                btn_choose.setOnClickListener() {
+                    postInfo(server_url + "/update", t_id)
+                }
+
+                return false
+            }
+        })
+
+        map!!.setOnMapClickListener(object: GoogleMap.OnMapClickListener{
+            override fun onMapClick(p0: LatLng) {
+                card_view.visibility = View.INVISIBLE
+            }
+        })
+
     }
 
     override fun onLocationChanged(location: Location) {
@@ -103,16 +128,25 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
         if (this.location != null) {
             this.btn_zoomin.isEnabled = true
         }
-        Toast.makeText(this, "${this.location.latitude}", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(this, "${this.location.latitude}", Toast.LENGTH_SHORT).show()
 
         // Mark current position
         val cur_pos = LatLng(this.location.latitude, this.location.longitude)
-        this.map.addMarker(MarkerOptions()
-            .position(cur_pos))
+        val circleOptions = CircleOptions()
+            .center(cur_pos)
+            .radius(20.0)
+            .strokeWidth(4F)
+            .strokeColor(0xff0000.toInt())
+            .fillColor(0xffff0000.toInt())
+        this.map.addCircle(circleOptions)
+
+//        this.map.addMarker(MarkerOptions()
+//            .position(cur_pos))
         //this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(cur_pos, this.zoom))
 
         for (i:Int in 0 until this.neighbors.getInt("count")) {
             var target: JSONObject = this.neighbors.getJSONObject("${i}")
+            var t_id = target.getInt("id")
             var t_loc = target.getDouble("loc")
             var t_lat = target.getDouble("lat")
             var t_floor = target.getInt("floor")
@@ -122,16 +156,34 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
 
             Log.d("Near", "Loc: ${t_loc}, Lat: ${t_lat}, Floor: ${t_floor}, Waterlevel: ${t_waterlevel}")
 
-            this.map.addMarker(MarkerOptions()
+
+            var defaultMarker =
+                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+
+            when(t_status) {
+                1 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                2 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+                3 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                4 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)
+                5 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+            }
+
+
+
+            var marker : Marker? = this.map.addMarker(MarkerOptions()
                 .position(LatLng(t_lat, t_loc))
+                .icon(defaultMarker)
             )
+            marker!!.tag = "${t_id}/${t_waterlevel}/${t_floor}"
+
             val circleOptions = CircleOptions()
                 .center(LatLng(t_lat, t_loc))
-                .radius(30.0)
-                .strokeWidth(40F)
-                .strokeColor(0xffff0000.toInt())
+                .radius(15.0)
+                .strokeWidth(4F)
+                .strokeColor(0xff000000.toInt())
                 .fillColor(0xff000000.toInt())
             this.map.addCircle(circleOptions)
+
 
         }
 
@@ -173,6 +225,31 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
             .target(latLng).zoom(16f).build()
         map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
     }
+
+    private fun postInfo(url: String, id: String) {
+        var target_url = "${url}?id=${id}"
+
+        Log.d("Connect", "try to connect...")
+
+        val jsonObjectRequest: JsonObjectRequest = JsonObjectRequest(
+            Request.Method.GET,
+            target_url,
+            null,
+            Response.Listener<JSONObject> { response ->
+                for (k in response.keys()) {
+                    Log.d("Connect", "${k}: ${response.get(k).toString()}")
+                    //result.put(k, response.get(k))
+                }
+                //neighbors = JSONObject(response.toString())
+                neighbors = JSONObject(response.toString())
+            },
+            Response.ErrorListener { error -> Log.d("error", "error...$error") }
+        )
+
+        val queue = Volley.newRequestQueue(this)
+        queue.add(jsonObjectRequest)
+    }
+
 
     private fun requestInfo(url: String, lat: Double, loc: Double, zoom: Float) {
 
