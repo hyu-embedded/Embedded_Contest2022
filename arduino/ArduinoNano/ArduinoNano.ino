@@ -18,7 +18,7 @@ void setup() {
   radio.begin();
   radio.setPALevel(RF24_PA_MAX);
   radio.setChannel(0x76);
-  radio.openWritingPipe(0xF0F0F0F0E2LL);
+  radio.openWritingPipe(0xF0F0F0F0E1LL);
   radio.enableDynamicPayloads();
   radio.powerUp();
 
@@ -36,6 +36,7 @@ void loop() {
   if (waterlevel > threshold) {
     String result = String(waterlevel, DEC);
     radio.write(result.c_str(), result.length());
+    delay(100);
     Serial.println(result); 
   }
   
