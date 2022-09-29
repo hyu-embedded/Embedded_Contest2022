@@ -28,7 +28,7 @@ class rpiClient:
     
     def __init__(self):
         self.config = {
-            'server_ip': '127.0.0.1',
+            'server_ip': '192.168.0.107',
             'server_port': 3000,
             'id': -1,
             'clients': [],
@@ -46,9 +46,9 @@ class rpiClient:
                 self.config[k] = v
 
 
-    def send_result(self, LOGGING=False):
+    def send_message(self, LOGGING=False):
         server_url = f'http://{self.config["server_ip"]}:{self.config["server_port"]}'
-        server_url += '/rasp/result'
+        server_url += '/rasp/update'
 
         msg = {
             'id': self.config['id'],
@@ -83,14 +83,6 @@ class rpiClient:
         if LOGGING:
             print(f'Get ID from server: {self.config["id"]}')
 
-    def run(self, LOGGING=False):
-
-        self.request_setup(LOGGING=LOGGING)
-
-        while True:
-
-            self.send_result(LOGGING=LOGGING)
-            time.sleep(2)
 
 
     def __update_timestamp(self):
@@ -103,7 +95,7 @@ class rpiClient:
 
 
 
-class rpiServer:
+class rpiServer():
     def __init__(self, water_channel, micro_channel, delay=1/1000, threshold = 0, height = 250):
         self.pipes = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1],[0xF0, 0xF0, 0xF0, 0xF0, 0x00]]
         self.radio = NRF24(GPIO, spidev.SpiDev())
@@ -197,13 +189,13 @@ class rpiServer:
     def water_level(self, water_height):
         if (water_height < initial_water_height):
             return 1
-        elif(water_height > initial_water_height and water_height < initial_water_height + 20):
+        elif(water_height > initial_water_height and water_height < initial_water_height + 5):
             return 2
-        elif(water_height > initial_water_height + 20 and water_height < initial_water_height + 40):
+        elif(water_height > initial_water_height + 5 and water_height < initial_water_height + 10):
             return 3
-        elif(water_height > initial_water_height + 40 and water_height < initial_water_height + 60):
+        elif(water_height > initial_water_height + 10 and water_height < initial_water_height + 30):
             return 4
-        elif(water_height > initial_water_height + 60 and water_height < initial_water_height + 80):
+        elif(water_height > initial_water_height + 30 and water_height < initial_water_height + 50):
             return 5
 
     def water_listening(self):
@@ -225,7 +217,7 @@ class rpiServer:
                     string += chr(n)
                     print(string)
                     info = float(string)
-            print("water energy:{}".format(info))
+         
 
             if (info > 500):
                 break
@@ -259,25 +251,31 @@ class rpiServer:
 
 
 if __name__ == '__main__':
-    # rasp = rpiClient()
+    main_client = rpiClient()
+    main_client.request_setup()
     # rasp.run(LOGGING=True)
     
     
     rasp = rpiServer(water_channel=0x76, micro_channel=0x77, delay=1/1000, threshold=400)
     rasp.radio_setup(water_pipe)
-    # # elif message == 2:
-    #     # rasp.ultrasensor(water_sensor)
+
     rasp.water_listening()
-    print("hi1")
     rasp.radio_setup(ultra_pipe)
     # rasp.setChannel(ultra_sensor_channel)
     while(1):
         height = rasp.ultra_listening()
         level = rasp.water_level(height)
     
+        main_client.setConfig(
+            {
+                'water_level': level,
+                'warning_level': water_level(level)
+            }
+        )
+
+        main_client.send_message()
 
     # communication with node server
-    print("hi2")
     
 
     #rasp.run(LOGGING=True)    
