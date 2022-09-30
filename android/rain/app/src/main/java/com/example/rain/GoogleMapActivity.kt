@@ -41,16 +41,19 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
     private var zoom: Float = 16f
-    private val server_url: String = "http://10.0.2.2:3000/android"
+    private val server_url: String = "http://192.168.0.107:3000/android"
+    //private val server_url: String = "http://10.0.2.2:3000/android"
     private lateinit var mLocationRequest: LocationRequest
     private lateinit var infoWindow: View
     private lateinit var infoTitle: TextView
     private lateinit var info_btn_select: Button
+    private lateinit var info_btn_done: Button
     private var neighbors = JSONObject().put("count", 0)
     private lateinit var card_view: CardView
-
-
     private lateinit var btn_zoomin: Button
+    private var isStart: Boolean = true
+    private var markers: Map<Int, Marker> = mutableMapOf();
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +75,7 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
         this.btn_zoomin.isEnabled = false
         this.btn_zoomin.setOnClickListener(){
             if(location != null) {
-                myLocationUpdates(location)
+                indicate_current_pos(location)
             }
         }
 
@@ -83,11 +86,11 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
 
         thread(start = true) {
             while(true) {
-                requestInfo(server_url, 37.40, -120.08, zoom)
+                request_neighbor_info(server_url+"/search", 37.40, -120.08, zoom)
 
                 Log.d("Near", "Count: ${neighbors.getInt("count")}")
 
-                Thread.sleep(10000)
+                Thread.sleep(1000)
             }
         }
     }
@@ -101,14 +104,34 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
                 var text_waterlevel = findViewById<TextView>(R.id.waterlevelTxt)
                 var text_floor = findViewById<TextView>(R.id.floorTxt)
                 var btn_choose = findViewById<Button>(R.id.btn_choose)
+                var btn_done = findViewById<Button>(R.id.btn_done)
+                btn_done.isEnabled = false
 
                 var arr = p1.tag.toString().split("/")
                 var t_id = arr[0]
-                text_waterlevel.text = arr[1]
+                text_waterlevel.text = arr[1] + "mm"
                 text_floor.text = arr[2]
+                var t_status = arr[3].toInt()
+
+                if (t_status > 0) {
+                    btn_choose.isEnabled = true
+                    btn_done.isEnabled = false
+                }
+
 
                 btn_choose.setOnClickListener() {
-                    postInfo(server_url + "/update", t_id)
+                    p1.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    btn_choose.isEnabled = false
+                    btn_done.isEnabled = true
+                    update_neighbor(t_id);
+                }
+
+                btn_done.setOnClickListener() {
+                    btn_done.isEnabled = false
+                    p1.isVisible = false
+                    //p1.remove()
+                    p1.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                    notify_select_client(t_id);
                 }
 
                 return false
@@ -118,15 +141,26 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
         map!!.setOnMapClickListener(object: GoogleMap.OnMapClickListener{
             override fun onMapClick(p0: LatLng) {
                 card_view.visibility = View.INVISIBLE
+
+                var btn_choose = findViewById<Button>(R.id.btn_choose)
+                var btn_done = findViewById<Button>(R.id.btn_done)
+
+                btn_choose.isEnabled = false
+                btn_done.isEnabled = false
             }
         })
 
     }
 
+
     override fun onLocationChanged(location: Location) {
         this.location = location
         if (this.location != null) {
             this.btn_zoomin.isEnabled = true
+//            if (this.isStart) {
+//                this.btn_zoomin.performClick()
+//                this.isStart=false
+//            }
         }
         //Toast.makeText(this, "${this.location.latitude}", Toast.LENGTH_SHORT).show()
 
@@ -156,33 +190,35 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
 
             Log.d("Near", "Loc: ${t_loc}, Lat: ${t_lat}, Floor: ${t_floor}, Waterlevel: ${t_waterlevel}")
 
-
             var defaultMarker =
                 BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
 
             when(t_status) {
+                -1 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
                 1 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
                 2 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
-                3 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
-                4 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)
-                5 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                3 -> defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
             }
 
+            if (t_isAssigned) {
+                defaultMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+            }
 
+            if (t_status < 0) continue
 
             var marker : Marker? = this.map.addMarker(MarkerOptions()
                 .position(LatLng(t_lat, t_loc))
                 .icon(defaultMarker)
             )
-            marker!!.tag = "${t_id}/${t_waterlevel}/${t_floor}"
+            marker!!.tag = "${t_id}/${t_waterlevel}/${t_floor}/${t_status}"
 
-            val circleOptions = CircleOptions()
-                .center(LatLng(t_lat, t_loc))
-                .radius(15.0)
-                .strokeWidth(4F)
-                .strokeColor(0xff000000.toInt())
-                .fillColor(0xff000000.toInt())
-            this.map.addCircle(circleOptions)
+//            val circleOptions = CircleOptions()
+//                .center(LatLng(t_lat, t_loc))
+//                .radius(15.0)
+//                .strokeWidth(4F)
+//                .strokeColor(0xff000000.toInt())
+//                .fillColor(0xff000000.toInt())
+//            this.map.addCircle(circleOptions)
 
 
         }
@@ -219,11 +255,19 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
         }
     }
 
-    private fun myLocationUpdates(location: Location) {
+    private fun indicate_current_pos(location: Location) {
         val latLng = LatLng(location.latitude, location.longitude)
         val position: CameraPosition = CameraPosition.Builder()
             .target(latLng).zoom(16f).build()
         map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
+    }
+
+    private fun update_neighbor(id: String) {
+        postInfo(server_url + "/update", id);
+    }
+
+    private fun notify_select_client(id: String) {
+        postInfo(server_url + "/done", id);
     }
 
     private fun postInfo(url: String, id: String) {
@@ -251,7 +295,7 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
     }
 
 
-    private fun requestInfo(url: String, lat: Double, loc: Double, zoom: Float) {
+    private fun request_neighbor_info(url: String, lat: Double, loc: Double, zoom: Float) {
 
         var target_url = "${url}?lat=${lat}&loc=${loc}&zoom=${zoom}"
 
@@ -276,6 +320,5 @@ class GoogleMapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListe
         queue.add(jsonObjectRequest)
 
     }
-
 
 }
