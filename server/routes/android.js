@@ -74,7 +74,7 @@ router.get('/', (req, res, next) => {
 })
 
 
-router.get('/login', (req, res, next) => {
+router.get('/login', async (req, res, next) => {
     console.log(`Login request:\nID: ${req.query.id}, Password: ${req.query.password}`)
     var id = req.body.id;
     var password = req.body.password;
@@ -83,33 +83,24 @@ router.get('/login', (req, res, next) => {
 
 })
 
-router.get('/search', (req, res, next) => {
+router.get('/search', async (req, res, next) => {
     
     var lat = req.query.lat;
     var loc = req.query.loc;
     var zoom = req.query.zoom;
 
-    if (testData[0].waterlevel < 100) {
-        testData[0].status = 2
-        testData[0].waterlevel += Math.floor(Math.random() * 10)
-    } else {
-        if (testData[0].status == 2) {
-            testData[0].status = 3;
-        }
-    }
-
     res.json(send_neighbor_info(loc, lat, zoom));
 });
 
 
-router.get('/update', (req, res, next) => {
+router.get('/update', async (req, res, next) => {
     var id = req.query.id;
     
     update_database(id, -1);
 });
 
 
-router.get('/done', (req, res, next) => {
+router.get('/done', async (req, res, next) => {
     var id = req.query.id;
 
     update_database(id, 1);
