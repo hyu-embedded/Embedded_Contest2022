@@ -21,6 +21,9 @@
 
 # 설치 환경
 nRF24l01 모듈을 사용하기 위해 라이브러리를 설치해줘야한다.
+
 raspberry pi - GPIO, NRF24
+
 arduino - NRF24
+
 해당 사용 방법은 **rasp_server** 폴더에 자세하게 나와있다.
