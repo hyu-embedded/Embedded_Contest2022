@@ -1,27 +1,68 @@
 const express = require('express');
 const router = express.Router();
+const Sensor = require("../models/Sensor");
+const User = require("../models/User");
 
-var testData = {
-    'count': 2,
-    '0': {id: 0, lat: 37.556132, loc: 127.049934, floor: 1, waterlevel: 56, status: 2, isAssigned: false},
-    '1': {id: 1, lat: 37.556945, loc: 127.049108, floor: 2, waterlevel: 38, status: 1, isAssigned: false},
+const validate_user = async (username, password) => {
+    const users = await User.aggregate([
+        {$match: {"username": username, "password": password}}
+    ]);
+
+    if (users.length == 0) {
+        return false;
+    }
+    return true;
 }
 
-const validate_user = (id, password) => {
-
-
+const send_login_result = async (username, password) => {
+    if (validate_user(username, password)) {
+        return {"status":"ok"};
+    } else {
+        return {"status":"error"};
+    }
 }
 
-const send_login_result = () => {
+const send_neighbor_info = async (loc, lat, zoom) => {
+    const diff = Math.pow(2, 20 - zoom)
 
+    const neighbors = Sensor.find({
+        loc: {
+            $gte: target_client.loc - diff,
+            $lt: target_client.loc + diff
+        },
+        lat: {
+            $gte: target_client.lat - diff,
+            $lt: target_client.lat + diff
+        },
+    })
+
+    var result = {
+        'count': neighbors.length
+    }
+
+    var idx = 0;
+    neighbors.foreach((neighbor) => {
+        result[`${idx}`] = neighbor;
+        idx += 1;
+    });
+
+    return result;
 }
 
-const send_neighbor_info = (loc, lat, zoom) => {
+const update_database = async (username, status) => {
 
+    try {
 
-}
+        const target_client = await Sensor.findOne({"username": username});
+        target_client.status = status;
+        await target_client.save();
+        return true;
 
-const update_database = (id, status) => {
+    } catch(err) {
+        return false;
+    }
+
+    return false;
     
 }
 
@@ -33,20 +74,12 @@ router.get('/', (req, res, next) => {
 })
 
 
-
-
 router.get('/login', (req, res, next) => {
     console.log(`Login request:\nID: ${req.query.id}, Password: ${req.query.password}`)
     var id = req.body.id;
     var password = req.body.password;
     
-    // Do login
-    if (req.query.id == 'yunsang' && req.query.password == '1234') {
-        console.log("okokok");
-        res.json({"status":"ok"})
-    } else {
-        res.json({"status":"error"})
-    }
+    res.json(send_login_result(id, password));
 
 })
 
@@ -65,25 +98,21 @@ router.get('/search', (req, res, next) => {
         }
     }
 
-    res.json(testData);
-
+    res.json(send_neighbor_info(loc, lat, zoom));
 });
 
 
 router.get('/update', (req, res, next) => {
     var id = req.query.id;
     
-    testData[`${id}`].isAssigned = true;
-    console.log(`testData: ${JSON.stringify(testData)}`)
-    res.json(testData);
+    update_database(id, -1);
 });
 
 
 router.get('/done', (req, res, next) => {
     var id = req.query.id;
 
-    testData[`${id}`].status = -1;
-    res.json(testData);
+    update_database(id, 1);
 })
 
 
